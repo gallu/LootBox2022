@@ -1,0 +1,69 @@
+create database lootbox_2022;
+grant all on lootbox_2022.* to lootbox_2022user@localhost identified by 'lootbox_2022_pass';
+
+lootbox_2022
+lootbox_2022user
+lootbox_2022_pass
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  user_id VARBINARY(128) NOT NULL COMMENT 'ユーザID',
+  `password` VARBINARY(256) NOT NULL COMMENT 'パスワード',
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (`user_id`)
+)CHARACTER SET 'utf8mb4', ENGINE=InnoDB, COMMENT='ユーザテーブル';
+
+ CREATE TABLE `cards` (
+  `card_id` bigint(20) unsigned NOT NULL COMMENT 'カードID',
+  `name` varchar(128) NOT NULL COMMENT 'カード名',
+  `offense_num` int(10) unsigned NOT NULL COMMENT '攻撃力',
+  `hp` int(10) unsigned NOT NULL COMMENT 'ヒットポイント',
+  `creator` varchar(255) NOT NULL COMMENT '作者',
+  `detail` text COMMENT '説明文',
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='1レコードが「１種類のカード」を意味するテーブル'
+
+CREATE TABLE `lootbox_decks` (
+  `lootbox_deck_id` bigint(20) unsigned NOT NULL COMMENT 'デッキID',
+  `lootbox_name` varchar(128) NOT NULL COMMENT 'デッキ名',
+  `draw_num` int(10) unsigned NOT NULL DEFAULT '1' COMMENT '引く枚数',
+  `cost` varbinary(1024) NOT NULL DEFAULT '' COMMENT 'がちゃを引くために必要なコスト(json)',
+  PRIMARY KEY (`lootbox_deck_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='1レコードが「１種類のがちゃ」を意味するテーブル'
+
+CREATE TABLE `lootbox_decks_detail` (
+  `lootbox_deck_id` bigint(20) unsigned NOT NULL COMMENT 'デッキID',
+  `card_id` bigint(20) unsigned NOT NULL COMMENT 'カードID',
+  `probability` int(10) unsigned NOT NULL COMMENT '確率',
+  PRIMARY KEY (`lootbox_deck_id`,`card_id`),
+  KEY `fk_lootbox_decks_card_id` (`card_id`),
+  CONSTRAINT `fk_lootbox_decks_detail_lootbox_deck_id` FOREIGN KEY (`lootbox_deck_id`) REFERENCES `lootbox_decks` (`lootbox_deck_id`),
+  CONSTRAINT `fk_lootbox_decks_card_id` FOREIGN KEY (`card_id`) REFERENCES `cards` (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='1レコードが「１種類のがちゃの１種類のカード」を意味するテーブル'
+
+
+CREATE TABLE `user_cards_a` (
+  `user_card_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `card_id` bigint(20) unsigned NOT NULL COMMENT 'カードID',
+  `user_id` varbinary(128) NOT NULL COMMENT 'ユーザID',
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`user_card_id`),
+  UNIQUE KEY `user_card_id` (`user_card_id`),
+  KEY `fk_user_cards_a_card_id` (`card_id`),
+  KEY `fk_user_cards_a_user_id` (`user_id`),
+  CONSTRAINT `fk_user_cards_a_card_id` FOREIGN KEY (`card_id`) REFERENCES `cards` (`card_id`),
+  CONSTRAINT `fk_user_cards_a_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='1レコードが「1ユーザが持つ１枚のカード」を意味するテーブル'
+
+CREATE TABLE `user_cards_b` (
+  `card_id` bigint(20) unsigned NOT NULL COMMENT 'カードID',
+  `user_id` varbinary(128) NOT NULL COMMENT 'ユーザID',
+  `num` int(10) unsigned NOT NULL COMMENT '所有枚数',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`card_id`,`user_id`),
+  KEY `fk_user_cards_b_user_id` (`user_id`),
+  CONSTRAINT `fk_user_cards_b_card_id` FOREIGN KEY (`card_id`) REFERENCES `cards` (`card_id`),
+  CONSTRAINT `fk_user_cards_b_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='1レコードが「1ユーザが持つ１種類のカード」を意味するテーブル'
+

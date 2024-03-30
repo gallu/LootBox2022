@@ -1,0 +1,22 @@
+{#  index.twig  #}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>がちゃ</title>
+  </head>
+  <body>
+    <h1>がちゃ</h1>
+
+    {% if flash.login_error == true %}
+    ログインでエラーが発生しました。<br>
+    {% endif %}
+
+    <form action="./login.php" method="post">
+    ID: <input type="text" name="id" value="{{ flash.login_id }}"><br>
+    パスワード: <input type="password" name="pw"><br>
+    <button>ログイン</button>
+    </form>
+    
+  </body>
+</html>
